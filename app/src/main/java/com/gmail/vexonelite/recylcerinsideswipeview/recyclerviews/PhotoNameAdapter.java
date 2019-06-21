@@ -1,5 +1,6 @@
 package com.gmail.vexonelite.recylcerinsideswipeview.recyclerviews;
 
+import android.annotation.SuppressLint;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -64,6 +65,7 @@ public final class PhotoNameAdapter extends ListAdapter<PhotoNameDelegate, Photo
         }
     }
 
+    @SuppressLint("DiffUtilEquals") // add this for lint error "Suspicious equality check: Did you mean .equals() instead of == ?"
     static class PhotoNameDiffCallback extends DiffUtil.ItemCallback<PhotoNameDelegate> {
 
         @Override
