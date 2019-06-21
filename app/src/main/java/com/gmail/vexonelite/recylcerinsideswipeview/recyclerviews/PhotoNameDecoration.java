@@ -14,7 +14,7 @@ public final class PhotoNameDecoration extends RecyclerView.ItemDecoration {
 
     public PhotoNameDecoration(@NonNull Context context) {
         float density = context.getResources().getDisplayMetrics().density;
-        margin = (int)(density * 8f);
+        margin = (int)(density * 20f);
     }
 
     @Override
