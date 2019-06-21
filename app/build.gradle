@@ -9,6 +9,17 @@ android {
         targetCompatibility JavaVersion.VERSION_1_8
     }
 
+    lintOptions {
+        // Manifest GoogleAppIndexingWarning
+        disable 'GoogleAppIndexingWarning'
+
+        //The logging tag can be at most 23 characters
+        disable 'LongLogTag'
+
+        //abortOnError false
+        //checkReleaseBuilds false
+    }
+
     defaultConfig {
         applicationId "com.gmail.vexonelite.recylcerinsideswipeview"
         minSdkVersion 19
