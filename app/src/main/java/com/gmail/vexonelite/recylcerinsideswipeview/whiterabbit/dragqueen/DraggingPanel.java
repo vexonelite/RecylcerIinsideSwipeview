@@ -33,6 +33,7 @@ public final class DraggingPanel extends RelativeLayout {
     public OnSizeChangedDelegate onSizeChangedCallback;
     public ViewDragAdapter viewDragAdapter;
 
+
     private String getLogTag() {
         return this.getClass().getSimpleName();
     }
@@ -52,7 +53,7 @@ public final class DraggingPanel extends RelativeLayout {
                     onStopDraggingToClosed();
                 } else if (mDraggingBorder == verticalRange) {
                     mIsOpen = true;
-                    Log.e("getLogTag", "[!! Opened now !!]");
+                    //Log.e("getLogTag", "[!! Opened now !!]");
                 }
             }
             if (state == ViewDragHelper.STATE_DRAGGING) {
@@ -84,7 +85,7 @@ public final class DraggingPanel extends RelativeLayout {
 
         @Override
         public boolean tryCaptureView(@NonNull View view, int pointerId) {
-            Log.i("DraggingPanel", "tryCaptureView - pointerId: " + pointerId);
+            //Log.i("DraggingPanel", "tryCaptureView - pointerId: " + pointerId);
             return (null != viewDragAdapter) && (viewDragAdapter.tryCaptureView(view, pointerId));
         }
 
@@ -103,24 +104,27 @@ public final class DraggingPanel extends RelativeLayout {
             final float rangeToCheck = verticalRange;
             if (mDraggingBorder == 0) {
                 mIsOpen = false;
-                Log.e("getLogTag", "[!! Closed now !!]");
+                //Log.e("getLogTag", "[!! Closed now !!]");
                 return;
             }
             if (mDraggingBorder == rangeToCheck) {
                 mIsOpen = true;
-                Log.e("getLogTag", "[!! Opened now !!]");
+                //Log.e("getLogTag", "[!! Opened now !!]");
                 return;
             }
             boolean settleToOpen = false;
             if (yvel > AUTO_OPEN_SPEED_LIMIT) { // speed has priority over position
                 settleToOpen = true;
-            } else if (yvel < -AUTO_OPEN_SPEED_LIMIT) {
-                settleToOpen = false;
-            } else if (mDraggingBorder > rangeToCheck / 2) {
-                settleToOpen = true;
-            } else if (mDraggingBorder < rangeToCheck / 2) {
-                settleToOpen = false;
             }
+//            else if (yvel < -AUTO_OPEN_SPEED_LIMIT) {
+//                settleToOpen = false;
+//            }
+//            else if (mDraggingBorder > rangeToCheck / 2) {
+//                settleToOpen = true;
+//            }
+//            else if (mDraggingBorder < rangeToCheck / 2) {
+//                settleToOpen = false;
+//            }
 
             //final int settleDestY = settleToOpen ? mVerticalRange : 0;
             final int settleDestY = settleToOpen ? verticalRange : 0;
@@ -144,40 +148,15 @@ public final class DraggingPanel extends RelativeLayout {
         }
     }
 
-    private void onStopDraggingToClosed() {
-        // To be implemented
-    }
-
-    private void onStartDragging() {
-
-    }
-
-    private boolean doesHitTargetView(@NonNull MotionEvent motionEvent) {
-        return (null != viewDragAdapter) && (viewDragAdapter.doesHitTargetView(motionEvent));
-    }
-
-//    private boolean isQueenTarget(@NonNull MotionEvent motionEvent) {
-//        int[] queenLocation = new int[2];
-//        draggedView.getLocationOnScreen(queenLocation);
-//        int upperLimit = queenLocation[1] + draggedView.getMeasuredHeight();
-//        int lowerLimit = queenLocation[1];
-//        int y = (int) motionEvent.getRawY();
-//        return (y > lowerLimit && y < upperLimit);
-//    }
-
     @Override
     public boolean onInterceptTouchEvent(MotionEvent event) {
-        //final boolean doesHitTargetView = doesHitTargetView(event);
-        //Log.i(getLogTag(), "onInterceptTouchEvent - doesHitTargetView: " + doesHitTargetView);
         final boolean shouldInterceptTouchEvent = mDragHelper.shouldInterceptTouchEvent(event);
-
         Log.i(getLogTag(), "onInterceptTouchEvent - shouldInterceptTouchEvent: " + shouldInterceptTouchEvent);
+        Log.i(getLogTag(), "onInterceptTouchEvent - shouldInterceptTouchEvent: " + shouldInterceptTouchEvent);
+
+        boolean doesHitTargetView = doesHitTargetView(event);
+
         return (doesHitTargetView(event) && mDragHelper.shouldInterceptTouchEvent(event));
-//        if (doesHitTargetView(event) && mDragHelper.shouldInterceptTouchEvent(event)) {
-//            return true;
-//        } else {
-//            return false;
-//        }
     }
 
     @SuppressLint("ClickableViewAccessibility")
@@ -198,6 +177,20 @@ public final class DraggingPanel extends RelativeLayout {
             ViewCompat.postInvalidateOnAnimation(this);
         }
     }
+
+
+    private void onStopDraggingToClosed() {
+        // To be implemented
+    }
+
+    private void onStartDragging() {
+
+    }
+
+    private boolean doesHitTargetView(@NonNull MotionEvent motionEvent) {
+        return (null != viewDragAdapter) && (viewDragAdapter.doesHitTargetView(motionEvent));
+    }
+
 
     public boolean isMoving() {
         return (mDraggingState == ViewDragHelper.STATE_DRAGGING ||

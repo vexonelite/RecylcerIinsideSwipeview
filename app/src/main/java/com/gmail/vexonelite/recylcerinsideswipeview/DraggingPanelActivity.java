@@ -129,6 +129,45 @@ public final class DraggingPanelActivity extends AppCompatActivity {
         /* Implementation of ViewDragAdapter */
 
         private int verticalRange = 0;
+        private final Rect draggingPanelHitRect = new Rect();
+        private final Rect draggingButtonHitRect = new Rect();
+        private final Rect recyclerViewHitRect = new Rect();
+
+        private boolean draggingPanelHasBeenInitialized = false;
+        private boolean draggingButtonHasBeenInitialized = false;
+        private boolean recyclerViewHasBeenInitialized = false;
+
+        private boolean initializeHitRectIfNeeded(Boolean hasBeenInitialized,
+                                                   @NonNull View view,
+                                                   @NonNull Rect hitRect) {
+            if (!hasBeenInitialized) {
+                view.getGlobalVisibleRect(hitRect);
+                Log.i("ViewDragAdapterImpl", "initializeHitRect - " +
+                        view.getClass().getSimpleName() + " hitRect : " + hitRect);
+                return true;
+            }
+            return false;
+        }
+
+        private void initializeHitRectsIfNeeded() {
+            if (!draggingPanelHasBeenInitialized) {
+                mDraggingPanel.getGlobalVisibleRect(draggingPanelHitRect);
+                Log.i("ViewDragAdapterImpl", "initializeHitRect - mDraggingPanel hitRect : " + draggingPanelHitRect);
+                draggingPanelHasBeenInitialized = true;
+            }
+
+            if (!draggingButtonHasBeenInitialized) {
+                draggingButton.getGlobalVisibleRect(draggingButtonHitRect);
+                Log.i("ViewDragAdapterImpl", "initializeHitRect - draggingButton hitRect : " + draggingButtonHitRect);
+                draggingButtonHasBeenInitialized = true;
+            }
+
+            if (!recyclerViewHasBeenInitialized) {
+                recyclerView.getGlobalVisibleRect(recyclerViewHitRect);
+                Log.i("ViewDragAdapterImpl", "initializeHitRect - recyclerViewHitRect hitRect : " + recyclerViewHitRect);
+                recyclerViewHasBeenInitialized = true;
+            }
+        }
 
         @Override
         public int getViewHorizontalDragRange(@Nullable View child) {
@@ -143,58 +182,56 @@ public final class DraggingPanelActivity extends AppCompatActivity {
         @Override
         public boolean tryCaptureView(@NonNull View child, int pointerId) {
             return (child.getId() == R.id.main_layout);
-
         }
 
         @Override
         public boolean doesHitTargetView(@NonNull MotionEvent motionEvent) {
-            Log.i("ViewDragAdapterImpl", "doesHitTargetView - motionEvent: (" + motionEvent.getX() + ", " + motionEvent.getY() + ")");
 
-            final Rect draggingPanelHitRect = new Rect();
-            mDraggingPanel.getGlobalVisibleRect(draggingPanelHitRect);
-            Log.i("ViewDragAdapterImpl", "doesHitTargetView - mDraggingPanel draggingPanelHitRect : " + draggingPanelHitRect);
+            initializeHitRectsIfNeeded();
+            Log.i("ViewDragAdapterImpl", "[Start ============================================]");
+            //Log.i("ViewDragAdapterImpl", "doesHitTargetView - motionEvent: (" + motionEvent.getX() + ", " + motionEvent.getY() + ")");
 
             final float offsetX = motionEvent.getX() + ((float) draggingPanelHitRect.left);
             final float offsetY = motionEvent.getY() + ((float) draggingPanelHitRect.top);
-            Log.i("ViewDragAdapterImpl", "doesHitTargetView - offsetX: " + offsetX + ", offsetY: " + offsetY);
+            //Log.i("ViewDragAdapterImpl", "doesHitTargetView - offsetX: " + offsetX + ", offsetY: " + offsetY);
 
-            final Rect draggingButtonHitRect = new Rect();
-            draggingButton.getGlobalVisibleRect(draggingButtonHitRect);
-            Log.i("ViewDragAdapterImpl", "doesHitTargetView - draggingButtonHitRect: " + draggingButtonHitRect);
-            Log.i("ViewDragAdapterImpl", "doesHitTargetView - draggingButton: " + draggingButtonHitRect.contains((int) offsetX, (int) offsetY) );
-            final Rect recyclerViewHitRect = new Rect();
-            //getHitRect(recyclerView, recyclerViewHitRect);
-            recyclerView.getGlobalVisibleRect(recyclerViewHitRect);
-            //Log.i("ViewDragAdapterImpl", "doesHitTargetView - recyclerView getTranslationY : " + recyclerView.getTranslationY());
-            Log.i("ViewDragAdapterImpl", "doesHitTargetView - recyclerViewHitRect: " + recyclerViewHitRect);
-            Log.i("ViewDragAdapterImpl", "doesHitTargetView - recyclerView: " + recyclerViewHitRect.contains((int) offsetX, (int) offsetY) );
+            final boolean hitDraggingButton = draggingButtonHitRect.contains((int) offsetX, (int) offsetY);
+            final boolean hitRecyclerView = recyclerViewHitRect.contains((int) offsetX, (int) offsetY);
 
-            if (recyclerViewHitRect.contains((int) offsetX, (int) offsetY)) {
-                if (mDraggingPanel.isOpen()) {
-
-                }
+            if (hitDraggingButton) {
+                Log.i("ViewDragAdapterImpl", "doesHitTargetView - hitDraggingButton: " + hitDraggingButton);
+                Log.i("ViewDragAdapterImpl", "[End ==============================================]");
+                return true;
+            }
+            else if (hitRecyclerView) {
                 boolean canScrollDown = canRecyclerViewScrollDown();
                 boolean canScrollUp = canRecyclerViewScrollUp();
                 boolean hasReachedBottom = (!canScrollDown) && canScrollUp;
                 boolean hasReachedTop = canScrollDown && (!canScrollUp);
+//                Log.i("ViewDragAdapterImpl", "doesHitTargetView - canScrollDown: " + canScrollDown);
+//                Log.i("ViewDragAdapterImpl", "doesHitTargetView - canScrollUp: " + canScrollUp);
+//                Log.i("ViewDragAdapterImpl", "doesHitTargetView - hasReachedBottom: " + hasReachedBottom);
+//                Log.i("ViewDragAdapterImpl", "doesHitTargetView - hasReachedTop: " + hasReachedTop);
+
+                Log.i("ViewDragAdapterImpl", "doesHitTargetView - hitRecyclerView: " + hitRecyclerView);
+                Log.e("ViewDragAdapterImpl", "mDraggingPanel close: " + mDraggingPanel.isOpen());
+                if (!mDraggingPanel.isOpen()) {
+                    if (hasReachedTop) {
+                        final View itemView = recyclerView.findChildViewUnder(motionEvent.getX(), motionEvent.getY());
+                        if (null == itemView) {
+                            Log.e("ViewDragAdapterImpl", "doesHitTargetView - No item is touched!");
+                            Log.i("ViewDragAdapterImpl", "[End ==============================================]");
+                            return true;
+                        }
+                        else {
+                            Log.i("ViewDragAdapterImpl", "doesHitTargetView - Item is touched!");
+                        }
+                    }
+                }
             }
 
-            return draggingButtonHitRect.contains((int) offsetX, (int) offsetY);
-//            if (draggingButtonHitRect.contains((int) motionEvent.getX(), (int) motionEvent.getY())) {
-//                return true;
-//            }
-//            else if (recyclerViewHitRect.contains((int) motionEvent.getX(), (int) motionEvent.getY())) {
-//                if (mDraggingPanel.isOpen()) {
-//
-//                }
-//                boolean canScrollDown = canRecyclerViewScrollDown();
-//                boolean canScrollUp = canRecyclerViewScrollUp();
-//                boolean hasReachedBottom = (!canScrollDown) && canScrollUp;
-//                boolean hasReachedTop = canScrollDown && (!canScrollUp);
-//            }
-//            else {
-//                return false;
-//            }
+            Log.i("ViewDragAdapterImpl", "[End ==============================================]");
+            return false;
         }
 
         ///
@@ -214,12 +251,6 @@ public final class DraggingPanelActivity extends AppCompatActivity {
         return recyclerView.canScrollVertically(1);
     }
 
-    public static void getHitRect(@NonNull View view, @NonNull Rect rect) {
-        rect.left = (int) (view.getLeft() + view.getTranslationX());
-        rect.top = (int) (view.getTop() + view.getTranslationY());
-        rect.right = rect.left + view.getWidth();
-        rect.bottom = rect.top + view.getHeight();
-    }
 }
 
 
