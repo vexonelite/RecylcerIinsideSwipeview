@@ -137,36 +137,31 @@ public final class DraggingPanelActivity extends AppCompatActivity {
         private boolean draggingButtonHasBeenInitialized = false;
         private boolean recyclerViewHasBeenInitialized = false;
 
-        private boolean initializeHitRectIfNeeded(Boolean hasBeenInitialized,
-                                                   @NonNull View view,
-                                                   @NonNull Rect hitRect) {
-            if (!hasBeenInitialized) {
-                view.getGlobalVisibleRect(hitRect);
-                Log.i("ViewDragAdapterImpl", "initializeHitRect - " +
-                        view.getClass().getSimpleName() + " hitRect : " + hitRect);
-                return true;
-            }
-            return false;
-        }
 
-        private void initializeHitRectsIfNeeded() {
-            if (!draggingPanelHasBeenInitialized) {
-                mDraggingPanel.getGlobalVisibleRect(draggingPanelHitRect);
-                Log.i("ViewDragAdapterImpl", "initializeHitRect - mDraggingPanel hitRect : " + draggingPanelHitRect);
-                draggingPanelHasBeenInitialized = true;
-            }
+        private void updateHitRects() {
+//            if (!draggingPanelHasBeenInitialized) {
+//                mDraggingPanel.getGlobalVisibleRect(draggingPanelHitRect);
+//                Log.i("ViewDragAdapterImpl", "initializeHitRect - mDraggingPanel hitRect : " + draggingPanelHitRect);
+//                draggingPanelHasBeenInitialized = true;
+//            }
 
-            if (!draggingButtonHasBeenInitialized) {
-                draggingButton.getGlobalVisibleRect(draggingButtonHitRect);
-                Log.i("ViewDragAdapterImpl", "initializeHitRect - draggingButton hitRect : " + draggingButtonHitRect);
-                draggingButtonHasBeenInitialized = true;
-            }
+            draggingButton.getGlobalVisibleRect(draggingButtonHitRect);
+            Log.i("ViewDragAdapterImpl", "updateHitRects - draggingButton hitRect : " + draggingButtonHitRect);
 
-            if (!recyclerViewHasBeenInitialized) {
-                recyclerView.getGlobalVisibleRect(recyclerViewHitRect);
-                Log.i("ViewDragAdapterImpl", "initializeHitRect - recyclerViewHitRect hitRect : " + recyclerViewHitRect);
-                recyclerViewHasBeenInitialized = true;
-            }
+            recyclerView.getGlobalVisibleRect(recyclerViewHitRect);
+            Log.i("ViewDragAdapterImpl", "updateHitRects - recyclerViewHitRect hitRect : " + recyclerViewHitRect);
+
+//            if (!draggingButtonHasBeenInitialized) {
+//                draggingButton.getGlobalVisibleRect(draggingButtonHitRect);
+//                Log.i("ViewDragAdapterImpl", "initializeHitRect - draggingButton hitRect : " + draggingButtonHitRect);
+//                draggingButtonHasBeenInitialized = true;
+//            }
+
+//            if (!recyclerViewHasBeenInitialized) {
+//                recyclerView.getGlobalVisibleRect(recyclerViewHitRect);
+//                Log.i("ViewDragAdapterImpl", "initializeHitRect - recyclerViewHitRect hitRect : " + recyclerViewHitRect);
+//                recyclerViewHasBeenInitialized = true;
+//            }
         }
 
         @Override
@@ -185,15 +180,15 @@ public final class DraggingPanelActivity extends AppCompatActivity {
         }
 
         @Override
-        public boolean doesHitTargetView(@NonNull MotionEvent motionEvent) {
+        public boolean doesHitTargetView(@NonNull MotionEvent motionEvent, boolean isMoving) {
 
-            initializeHitRectsIfNeeded();
-            Log.i("ViewDragAdapterImpl", "[Start ============================================]");
-            //Log.i("ViewDragAdapterImpl", "doesHitTargetView - motionEvent: (" + motionEvent.getX() + ", " + motionEvent.getY() + ")");
+            updateHitRects();
+            Log.i("ViewDragAdapterImpl", "[Start - isMoving: " + isMoving + " ============================================]");
+            Log.i("ViewDragAdapterImpl", "doesHitTargetView - motionEvent: (" + motionEvent.getX() + ", " + motionEvent.getY() + ")");
 
             final float offsetX = motionEvent.getX() + ((float) draggingPanelHitRect.left);
             final float offsetY = motionEvent.getY() + ((float) draggingPanelHitRect.top);
-            //Log.i("ViewDragAdapterImpl", "doesHitTargetView - offsetX: " + offsetX + ", offsetY: " + offsetY);
+            Log.i("ViewDragAdapterImpl", "doesHitTargetView - offsetX: " + offsetX + ", offsetY: " + offsetY);
 
             final boolean hitDraggingButton = draggingButtonHitRect.contains((int) offsetX, (int) offsetY);
             final boolean hitRecyclerView = recyclerViewHitRect.contains((int) offsetX, (int) offsetY);
@@ -208,11 +203,12 @@ public final class DraggingPanelActivity extends AppCompatActivity {
                 boolean canScrollUp = canRecyclerViewScrollUp();
                 boolean hasReachedBottom = (!canScrollDown) && canScrollUp;
                 boolean hasReachedTop = canScrollDown && (!canScrollUp);
-//                Log.i("ViewDragAdapterImpl", "doesHitTargetView - canScrollDown: " + canScrollDown);
-//                Log.i("ViewDragAdapterImpl", "doesHitTargetView - canScrollUp: " + canScrollUp);
-//                Log.i("ViewDragAdapterImpl", "doesHitTargetView - hasReachedBottom: " + hasReachedBottom);
-//                Log.i("ViewDragAdapterImpl", "doesHitTargetView - hasReachedTop: " + hasReachedTop);
+                Log.i("ViewDragAdapterImpl", "doesHitTargetView - canScrollDown: " + canScrollDown);
+                Log.i("ViewDragAdapterImpl", "doesHitTargetView - canScrollUp: " + canScrollUp);
+                Log.i("ViewDragAdapterImpl", "doesHitTargetView - hasReachedBottom: " + hasReachedBottom);
+                Log.i("ViewDragAdapterImpl", "doesHitTargetView - hasReachedTop: " + hasReachedTop);
 
+                //recyclerView.getLocationOnScreen()
                 Log.i("ViewDragAdapterImpl", "doesHitTargetView - hitRecyclerView: " + hitRecyclerView);
                 Log.e("ViewDragAdapterImpl", "mDraggingPanel close: " + mDraggingPanel.isOpen());
                 if (!mDraggingPanel.isOpen()) {
@@ -221,7 +217,7 @@ public final class DraggingPanelActivity extends AppCompatActivity {
                         if (null == itemView) {
                             Log.e("ViewDragAdapterImpl", "doesHitTargetView - No item is touched!");
                             Log.i("ViewDragAdapterImpl", "[End ==============================================]");
-                            return true;
+                            //return true;
                         }
                         else {
                             Log.i("ViewDragAdapterImpl", "doesHitTargetView - Item is touched!");
@@ -240,6 +236,11 @@ public final class DraggingPanelActivity extends AppCompatActivity {
         @Override
         public void onSizeChanged(int width, int height, int oldWidth, int oldHeight) {
             verticalRange = (int) (height * 0.84);
+            if (!draggingPanelHasBeenInitialized) {
+                mDraggingPanel.getGlobalVisibleRect(draggingPanelHitRect);
+                Log.i("ViewDragAdapterImpl", "onSizeChanged - mDraggingPanel hitRect : " + draggingPanelHitRect);
+                draggingPanelHasBeenInitialized = true;
+            }
         }
     }
 

@@ -47,5 +47,5 @@ public interface ViewDragAdapter {
 
     ///
 
-    boolean doesHitTargetView(@NonNull MotionEvent motionEvent);
+    boolean doesHitTargetView(@NonNull MotionEvent motionEvent, boolean isMoving);
 }

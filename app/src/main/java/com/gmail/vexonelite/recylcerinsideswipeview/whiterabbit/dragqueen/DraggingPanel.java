@@ -151,19 +151,22 @@ public final class DraggingPanel extends RelativeLayout {
     @Override
     public boolean onInterceptTouchEvent(MotionEvent event) {
         final boolean shouldInterceptTouchEvent = mDragHelper.shouldInterceptTouchEvent(event);
-        Log.i(getLogTag(), "onInterceptTouchEvent - shouldInterceptTouchEvent: " + shouldInterceptTouchEvent);
-        Log.i(getLogTag(), "onInterceptTouchEvent - shouldInterceptTouchEvent: " + shouldInterceptTouchEvent);
+        Log.e(getLogTag(), "onInterceptTouchEvent - shouldInterceptTouchEvent: " + shouldInterceptTouchEvent);
 
-        boolean doesHitTargetView = doesHitTargetView(event);
+        final boolean isMoving = isMoving();
+        final boolean doesHitTargetView = doesHitTargetView(event, isMoving);
+        Log.i(getLogTag(), "onInterceptTouchEvent - doesHitTargetView: " + doesHitTargetView);
 
-        return (doesHitTargetView(event) && mDragHelper.shouldInterceptTouchEvent(event));
+        return (isMoving && mDragHelper.shouldInterceptTouchEvent(event));
+        //return (doesHitTargetView(event, isMoving) && mDragHelper.shouldInterceptTouchEvent(event));
     }
 
     @SuppressLint("ClickableViewAccessibility")
     @Override
     public boolean onTouchEvent(MotionEvent event) {
-        Log.i(getLogTag(), "onTouchEvent");
-        if (doesHitTargetView(event) || isMoving()) {
+        Log.e(getLogTag(), "onTouchEvent");
+        final boolean isMoving = isMoving();
+        if (doesHitTargetView(event, isMoving) || isMoving) {
             mDragHelper.processTouchEvent(event);
             return true;
         } else {
@@ -187,8 +190,8 @@ public final class DraggingPanel extends RelativeLayout {
 
     }
 
-    private boolean doesHitTargetView(@NonNull MotionEvent motionEvent) {
-        return (null != viewDragAdapter) && (viewDragAdapter.doesHitTargetView(motionEvent));
+    private boolean doesHitTargetView(@NonNull MotionEvent motionEvent, boolean isMoving) {
+        return (null != viewDragAdapter) && (viewDragAdapter.doesHitTargetView(motionEvent, isMoving));
     }
 
 
